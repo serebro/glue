@@ -23,6 +23,7 @@ VALID_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif']
 PSEUDO_CLASSES = set(['link', 'visited', 'active', 'hover', 'focus',
                       'first-letter', 'first-line', 'first-child',
                       'before', 'after'])
+PSEUDO_CLASSES_IMAGE_INHERIT = set(['before', 'after'])
 
 DEFAULT_SETTINGS = {'padding': '0',
                     'algorithm': 'square',
@@ -290,6 +291,12 @@ class Image(object):
 
         pseudo = set(self.filename.split('_')).intersection(PSEUDO_CLASSES)
         self.pseudo = ':%s' % list(pseudo)[-1] if pseudo else ''
+
+        image_inherit = set(self.filename.split('_')).intersection(PSEUDO_CLASSES_IMAGE_INHERIT)
+        if pseudo:
+            self.add_to_class = 1 if list(pseudo)[-1] in image_inherit else 0
+        else: 
+            self.add_to_class = 1;
 
         image_path = os.path.join(sprite.path, name)
         image_file = open(image_path, "rb")
@@ -604,8 +611,7 @@ class Sprite(object):
         css_file = open(css_filename, 'w')
 
         # get all the class names and join them
-        class_names = ',\n'.join(['.%s' % i.class_name for i in self.images \
-                                                  if ':' not in i.class_name])
+        class_names = ',\n'.join(['.%s' % i.class_name for i in self.images if i.add_to_class == 1])
 
         # add the global style for all the sprites for less bloat
         template = self.config.global_template.decode('unicode-escape')
